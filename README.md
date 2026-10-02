@@ -2,11 +2,20 @@
 
 一款轻量的本地漫画 / 视频阅读器，专注于**本地媒体管理**和**沉浸式阅读 / 播放体验**。
 
+<p align="center">
+  <a href="https://github.com/Nyamuchin/ReadPlus/releases/latest">
+    <img src="https://img.shields.io/badge/下载-最新版APK-brightgreen?style=for-the-badge&logo=android" alt="Download APK">
+  </a>
+</p>
+
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg)](https://www.android.com/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-blue.svg)](https://kotlinlang.org/)
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-BOM%202024.12.01-blue.svg)](https://developer.android.com/jetpack/compose)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![minSdk](https://img.shields.io/badge/minSdk-26-orange.svg)](https://developer.android.com/about/versions/oreo)
+[![Latest Release](https://img.shields.io/github/v/release/Nyamuchin/ReadPlus)](https://github.com/Nyamuchin/ReadPlus/releases)
+[![Downloads](https://img.shields.io/github/downloads/Nyamuchin/ReadPlus/total)](https://github.com/Nyamuchin/ReadPlus/releases)
+[![Stars](https://img.shields.io/github/stars/Nyamuchin/ReadPlus?style=social)](https://github.com/Nyamuchin/ReadPlus/stargazers)
 
 ---
 
