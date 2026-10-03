@@ -1,6 +1,10 @@
-# ReadPlus
+<p align="center">
+  <img src="docs/icon.png" alt="ReadPlus" width="120" height="120">
+</p>
 
-一款轻量的本地漫画 / 视频阅读器，专注于**本地媒体管理**和**沉浸式阅读 / 播放体验**。
+<h1 align="center">ReadPlus</h1>
+
+<p align="center">一款轻量的本地漫画 / 视频阅读器，专注于<strong>本地媒体管理</strong>和<strong>沉浸式阅读 / 播放体验</strong>。</p>
 
 <p align="center">
   <a href="https://github.com/Nyamuchin/ReadPlus/releases/latest">
