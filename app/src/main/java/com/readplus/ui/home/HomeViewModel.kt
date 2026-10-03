@@ -120,14 +120,53 @@ class HomeViewModel @Inject constructor(
         videoRepo.delete(video)
     }
 
+    // ============================================================
+    // 重命名
+    // ============================================================
+
+    fun renameComic(comicId: Long, newTitle: String) = viewModelScope.launch {
+        comicRepo.rename(comicId, newTitle)
+    }
+
+    fun renameVideo(videoId: Long, newTitle: String) = viewModelScope.launch {
+        videoRepo.rename(videoId, newTitle)
+    }
+
+    // ============================================================
+    // 漫画导入：单个（保留兼容）+ 批量 + 文件夹
+    // ============================================================
+
     fun importComic(uri: Uri) = viewModelScope.launch {
         val result = comicRepo.importZip(uri)
         _message.value = if (result != null) {
             "导入成功"
         } else {
-            "导入失败：请选择有效的 ZIP 文件（.zip）"
+            "导入失败：请选择有效的漫画文件"
         }
     }
+
+    /** 多选批量导入漫画 */
+    fun importComics(uris: List<Uri>) = viewModelScope.launch {
+        if (uris.isEmpty()) return@launch
+        _message.value = "正在导入 ${uris.size} 本漫画…"
+        val count = comicRepo.importMultiple(uris)
+        _message.value = when {
+            count == 0 -> "导入失败：没有可导入的漫画"
+            count < uris.size -> "导入 $count 本，${uris.size - count} 本失败"
+            else -> "导入 $count 本漫画"
+        }
+    }
+
+    /** 选文件夹批量导入漫画（递归扫描） */
+    fun importComicFolder(treeUri: Uri) = viewModelScope.launch {
+        _message.value = "正在扫描并导入漫画…"
+        val count = comicRepo.importFolder(treeUri)
+        _message.value = if (count > 0) "导入 $count 本漫画" else "该文件夹中没有找到漫画"
+    }
+
+    // ============================================================
+    // 视频导入
+    // ============================================================
 
     fun importVideos(uris: List<Uri>) = viewModelScope.launch {
         val count = videoRepo.importMultiple(uris)

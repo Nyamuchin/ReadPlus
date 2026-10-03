@@ -59,9 +59,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
@@ -151,8 +155,6 @@ fun VideoFeedScreen(
     val pagerState = rememberPagerState(initialPage = initialIndex) { videos.size }
 
     // 切页：重置状态 + 换视频
-    // 这里同时更新 currentPageRef（用于 onRenderedFirstFrame 回调），
-    // 清理 renderedFirstFramePage、pageSettled、userPaused
     LaunchedEffect(pagerState.currentPage, videos) {
         val page = pagerState.currentPage
         val video = videos.getOrNull(page) ?: return@LaunchedEffect
@@ -210,6 +212,36 @@ fun VideoFeedScreen(
 
     // UI 显隐条件：由 userPaused 驱动，不受 ExoPlayer 状态影响
     val showPausedUi = userPaused && !isDragging
+
+    // ============================================================
+    // 沉浸式系统栏控制
+    // - 播放中（userPaused=false）→ 隐藏状态栏+导航栏，全屏沉浸
+    // - 暂停/拖拽中 → 显示系统栏
+    // - 离开页面 → 恢复系统栏
+    // ============================================================
+    val view = LocalView.current
+    val window = (view.context as android.app.Activity).window
+    val insetsController = remember(window, view) {
+        WindowCompat.getInsetsController(window, view)
+    }
+
+    DisposableEffect(showPausedUi) {
+        if (showPausedUi) {
+            insetsController.show(WindowInsetsCompat.Type.systemBars())
+        } else {
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+        onDispose { }
+    }
+
+    // 离开视频页时，无条件恢复系统栏显示
+    DisposableEffect(Unit) {
+        onDispose {
+            insetsController.show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
 
     Box(
         Modifier

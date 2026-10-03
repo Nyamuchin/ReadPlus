@@ -31,7 +31,10 @@ class MainActivity : ComponentActivity() {
                 initialValue = AppSettings()
             )
 
-            ReadPlusTheme(themeStyle = prefs.themeStyle) {
+            ReadPlusTheme(
+                themeStyle = prefs.themeStyle,
+                themeMode = prefs.themeMode
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

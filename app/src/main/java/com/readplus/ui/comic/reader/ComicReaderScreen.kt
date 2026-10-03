@@ -40,7 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -61,17 +61,22 @@ fun ComicReaderScreen(
     var showBar by remember { mutableStateOf(true) }
     var zooming by remember { mutableStateOf(false) }
 
+    // 根据当前主题背景亮度，决定状态栏图标用深色还是浅色
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val isDarkBackground = backgroundColor.luminance() < 0.5f
+
     val view = LocalView.current
     val window = (view.context as android.app.Activity).window
     val controller = remember(window, view) {
         WindowCompat.getInsetsController(window, view)
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(isDarkBackground) {
         val originalLightStatus = controller.isAppearanceLightStatusBars
         val originalLightNav = controller.isAppearanceLightNavigationBars
-        controller.isAppearanceLightStatusBars = true
-        controller.isAppearanceLightNavigationBars = true
+        // 深色背景 → 白色图标；浅色背景 → 深色图标
+        controller.isAppearanceLightStatusBars = !isDarkBackground
+        controller.isAppearanceLightNavigationBars = !isDarkBackground
         onDispose {
             controller.isAppearanceLightStatusBars = originalLightStatus
             controller.isAppearanceLightNavigationBars = originalLightNav
@@ -93,7 +98,7 @@ fun ComicReaderScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when (state.mode) {
             ReadingMode.LEFT_TO_RIGHT -> HorizontalReader(
@@ -152,6 +157,8 @@ private fun ReaderTopBar(
     modifier: Modifier = Modifier
 ) {
     var menuOpen by remember { mutableStateOf(false) }
+    val barBg = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+    val contentColor = MaterialTheme.colorScheme.onSurface
 
     AnimatedVisibility(
         visible = visible,
@@ -162,7 +169,7 @@ private fun ReaderTopBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White.copy(alpha = 0.92f))
+                .background(barBg)
                 .statusBarsPadding()
         ) {
             Row(
@@ -175,12 +182,12 @@ private fun ReaderTopBar(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回",
-                        tint = Color.Black
+                        tint = contentColor
                     )
                 }
                 Text(
                     text = title,
-                    color = Color.Black,
+                    color = contentColor,
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 8.dp),
@@ -193,7 +200,7 @@ private fun ReaderTopBar(
                         Icon(
                             Icons.Default.Menu,
                             contentDescription = "菜单",
-                            tint = Color.Black
+                            tint = contentColor
                         )
                     }
                     DropdownMenu(
@@ -234,6 +241,8 @@ private fun ReaderBottomBar(
 ) {
     if (totalPages <= 0) return
     val progress = (currentPage + 1).toFloat() / totalPages.toFloat()
+    val barBg = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+    val contentColor = MaterialTheme.colorScheme.onSurface
 
     AnimatedVisibility(
         visible = visible,
@@ -244,7 +253,7 @@ private fun ReaderBottomBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White.copy(alpha = 0.92f))
+                .background(barBg)
                 .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -256,7 +265,7 @@ private fun ReaderBottomBar(
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "${currentPage + 1} / $totalPages",
-                color = Color.Black,
+                color = contentColor,
                 style = MaterialTheme.typography.labelMedium
             )
         }

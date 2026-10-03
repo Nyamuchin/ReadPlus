@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.readplus.data.preferences.ThemeMode
 import com.readplus.data.preferences.ThemeStyle
 
 // ============================================================
@@ -38,9 +39,16 @@ private val MiuixShapes = Shapes(
 @Composable
 fun ReadPlusTheme(
     themeStyle: ThemeStyle = ThemeStyle.MATERIAL,
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
+    // 根据用户选择决定明暗：跟随系统 / 强制浅色 / 强制深色
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+
     val colorScheme = when (themeStyle) {
         ThemeStyle.MATERIAL -> materialColorScheme(darkTheme)
         ThemeStyle.MIUIX -> if (darkTheme) MiuixDarkColorScheme else MiuixLightColorScheme

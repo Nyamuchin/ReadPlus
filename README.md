@@ -52,6 +52,7 @@ ReadPlus 是一款完全本地化的漫画和视频管理工具。它不做任�
 
 | 功能 | 说明 |
 |------|------|
+| **ZIP 导入** | 支持 `.zip` 打包的图片集，图片格式支持 `jpg` / `jpeg` / `png` / `webp` / `gif` |
 | **自然排序** | `page_2.jpg` < `page_10.jpg`，自动识别数字序号 |
 | **嵌套平铺** | ZIP 内的子文件夹自动平铺，按文件名排序 |
 | **三种阅读模式** | 从左到右 / 从右到左（日漫）/ 纵向滚动 |
@@ -74,7 +75,6 @@ ReadPlus 是一款完全本地化的漫画和视频管理工具。它不做任�
 | **单击暂停 / 继续** | 暂停时中央显示播放按钮（抖音风格） |
 | **顶部信息** | 暂停时显示视频标题和所属分类 |
 | **封面缓存** | 提取视频第一帧作为封面，避免切换时黑屏 |
-| **零残留切换** | TextureView + 封面遮罩，滑动切换无旧帧残留 |
 
 ### 🗂 分类管理
 
@@ -173,12 +173,6 @@ cd ReadPlus
 # Release 版（需要配置签名）
 ./gradlew assembleRelease
 # 输出：app/build/outputs/apk/release/app-release.apk
-```
-
-**Windows 用户注意**：PowerShell 里必须加 `.\` 前缀：
-
-```powershell
-.\gradlew.bat assembleRelease
 ```
 
 ---

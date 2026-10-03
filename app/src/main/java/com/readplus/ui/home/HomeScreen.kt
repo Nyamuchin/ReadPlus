@@ -56,12 +56,25 @@ import com.readplus.ui.comic.list.ComicGrid
 import com.readplus.ui.video.list.VideoGrid
 import kotlinx.coroutines.launch
 
-// 只显示 ZIP 类型文件
-private val ZIP_MIME_TYPES = arrayOf(
+private val COMIC_MIME_TYPES = arrayOf(
+    // ZIP 及变体
     "application/zip",
     "application/x-zip-compressed",
     "application/x-zip",
-    "multipart/x-zip"
+    "multipart/x-zip",
+    // PDF
+    "application/pdf",
+    // MOBI / AZW
+    "application/x-mobipocket-ebook",
+    "application/vnd.amazon.ebook",
+    // EPUB
+    "application/epub+zip",
+    // CBZ / CBR
+    "application/vnd.comicbook+zip",
+    "application/vnd.comicbook-rar",
+    "application/x-cbz",
+    "application/x-cbr",
+    "application/x-cbr-archive"
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,20 +104,35 @@ fun HomeScreen(
         }
     }
 
-    val zipPicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let {
-            // 持久化读取权限
+    // ---- 漫画：多选文件 ----
+    val comicPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris ->
+        uris.forEach {
             runCatching {
                 context.contentResolver.takePersistableUriPermission(
                     it, Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             }
-            viewModel.importComic(it)
+        }
+        viewModel.importComics(uris)
+    }
+
+    // ---- 漫画：选文件夹批量导入 ----
+    val comicFolderPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    it, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+            viewModel.importComicFolder(it)
         }
     }
 
+    // ---- 视频：多选文件 ----
     val videoPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenMultipleDocuments()
     ) { uris ->
@@ -118,6 +146,7 @@ fun HomeScreen(
         viewModel.importVideos(uris)
     }
 
+    // ---- 视频：选文件夹 ----
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
@@ -138,13 +167,17 @@ fun HomeScreen(
                 title = { Text("ReadPlus") },
                 actions = {
                     if (state.tab == 0) {
+                        // 漫画 Tab：多选文件 + 选文件夹
                         IconButton(onClick = {
-                            // 只允许选 ZIP
-                            zipPicker.launch(ZIP_MIME_TYPES)
+                            comicPicker.launch(COMIC_MIME_TYPES)
                         }) {
-                            Icon(Icons.Default.Add, "导入 ZIP")
+                            Icon(Icons.Default.Add, "批量导入漫画")
+                        }
+                        IconButton(onClick = { comicFolderPicker.launch(null) }) {
+                            Icon(Icons.Default.Folder, "从文件夹导入漫画")
                         }
                     } else {
+                        // 视频 Tab：多选文件 + 选文件夹
                         IconButton(onClick = {
                             videoPicker.launch(arrayOf("video/*"))
                         }) {
@@ -215,12 +248,15 @@ private fun ComicPage(
             onDelete = { category -> viewModel.deleteCategory(category.id, "COMIC") }
         )
         if (state.comics.isEmpty()) {
-            EmptyHint("还没有漫画，点击右上角导入 ZIP")
+            EmptyHint("还没有漫画，点击右上角导入 ZIP / PDF / MOBI / EPUB / CBZ / CBR")
         } else {
             ComicGrid(
                 comics = state.comics,
                 onClick = { onComicClick(it.id) },
                 onDelete = viewModel::deleteComic,
+                onRename = { comic, newTitle ->
+                    viewModel.renameComic(comic.id, newTitle)
+                },
                 categories = state.comicCategories,
                 onAddToCategory = { comic, category ->
                     viewModel.addComicToCategory(comic.id, category.id)
@@ -253,6 +289,9 @@ private fun VideoPage(
                     onVideoClick(video.id, state.selectedVideoCategory)
                 },
                 onDelete = viewModel::deleteVideo,
+                onRename = { video, newTitle ->
+                    viewModel.renameVideo(video.id, newTitle)
+                },
                 categories = state.videoCategories,
                 onAddToCategory = { video, category ->
                     viewModel.addVideoToCategory(video.id, category.id)

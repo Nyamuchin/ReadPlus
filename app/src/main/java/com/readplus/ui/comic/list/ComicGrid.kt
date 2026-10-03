@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +50,7 @@ fun ComicGrid(
     comics: List<Comic>,
     onClick: (Comic) -> Unit,
     onDelete: (Comic) -> Unit,
+    onRename: (Comic, String) -> Unit,
     categories: List<Category>,
     onAddToCategory: (Comic, Category) -> Unit,
     columns: Int = 3
@@ -57,6 +59,8 @@ fun ComicGrid(
     var showActionMenu by remember { mutableStateOf(false) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var renameText by remember { mutableStateOf("") }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
@@ -123,6 +127,15 @@ fun ComicGrid(
                     TextButton(
                         onClick = {
                             showActionMenu = false
+                            renameText = target.title
+                            showRenameDialog = true
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("重命名") }
+                    HorizontalDivider()
+                    TextButton(
+                        onClick = {
+                            showActionMenu = false
                             showCategoryPicker = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -140,6 +153,43 @@ fun ComicGrid(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showActionMenu = false }) { Text("取消") }
+            }
+        )
+    }
+
+    // ---- 重命名 ----
+    if (showRenameDialog && actionTarget != null) {
+        val target = actionTarget!!
+        AlertDialog(
+            onDismissRequest = {
+                showRenameDialog = false
+                actionTarget = null
+            },
+            title = { Text("重命名漫画") },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    singleLine = true,
+                    label = { Text("标题") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = renameText.isNotBlank(),
+                    onClick = {
+                        onRename(target, renameText)
+                        showRenameDialog = false
+                        actionTarget = null
+                    }
+                ) { Text("确定") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showRenameDialog = false
+                    actionTarget = null
+                }) { Text("取消") }
             }
         )
     }

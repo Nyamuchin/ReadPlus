@@ -12,10 +12,27 @@ interface ComicRepository {
     fun observeById(id: Long): Flow<Comic?>
     suspend fun getById(id: Long): Comic?
     suspend fun importZip(uri: Uri): Long?
+
+    /** 批量导入多个漫画文件，返回成功导入的数量 */
+    suspend fun importMultiple(uris: List<Uri>): Int
+
+    /** 递归扫描文件夹，导入其中所有漫画文件，返回成功导入的数量 */
+    suspend fun importFolder(treeUri: Uri): Int
+
     suspend fun updateProgress(comicId: Long, page: Int)
     suspend fun delete(comic: Comic)
+
+    /** 重命名漫画 */
+    suspend fun rename(comicId: Long, newTitle: String)
+
     suspend fun addToCategory(comicId: Long, categoryId: Long)
     suspend fun removeFromCategory(comicId: Long, categoryId: Long)
+
+    /** 从漫画的某一页（0-based）提取封面 */
+    suspend fun setCoverFromPage(comicId: Long, pageIndex: Int): Boolean
+
+    /** 从外部图片设置封面 */
+    suspend fun setCoverFromUri(comicId: Long, uri: Uri): Boolean
 }
 
 interface VideoRepository {
@@ -24,9 +41,12 @@ interface VideoRepository {
     suspend fun importMultiple(uris: List<Uri>): Int
     suspend fun importFolder(treeUri: Uri): Int
     suspend fun delete(video: Video)
+
+    /** 重命名视频 */
+    suspend fun rename(videoId: Long, newTitle: String)
+
     suspend fun addToCategory(videoId: Long, categoryId: Long)
     suspend fun removeFromCategory(videoId: Long, categoryId: Long)
-    /** 获取 videoId → 分类名列表 的映射 */
     suspend fun getCategoryNamesByVideo(): Map<Long, List<String>>
 }
 

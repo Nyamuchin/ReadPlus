@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Palette
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.readplus.data.preferences.ThemeMode
 import com.readplus.data.preferences.ThemeStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,6 +139,29 @@ fun SettingsScreen(
 
             HorizontalDivider()
 
+            ListItem(
+                headlineContent = { Text("明暗模式") },
+                supportingContent = {
+                    Text(
+                        when (state.themeMode) {
+                            ThemeMode.SYSTEM -> "跟随系统"
+                            ThemeMode.LIGHT -> "浅色"
+                            ThemeMode.DARK -> "深色"
+                        }
+                    )
+                },
+                leadingContent = {
+                    Icon(Icons.Default.Brightness6, contentDescription = null)
+                }
+            )
+
+            ThemeModeRadioGroup(
+                selected = state.themeMode,
+                onSelect = viewModel::setThemeMode
+            )
+
+            HorizontalDivider()
+
             // ---------- 数据 ----------
             SectionHeader("数据")
 
@@ -222,6 +247,37 @@ private fun ThemeRadioGroup(
             description = "HyperOS / MIUI 风格，大圆角扁平卡片",
             selected = selected == ThemeStyle.MIUIX,
             onClick = { onSelect(ThemeStyle.MIUIX) }
+        )
+    }
+}
+
+@Composable
+private fun ThemeModeRadioGroup(
+    selected: ThemeMode,
+    onSelect: (ThemeMode) -> Unit
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        ThemeOption(
+            label = "跟随系统",
+            description = "系统深色时使用深色，否则使用浅色",
+            selected = selected == ThemeMode.SYSTEM,
+            onClick = { onSelect(ThemeMode.SYSTEM) }
+        )
+        ThemeOption(
+            label = "浅色",
+            description = "始终使用浅色主题",
+            selected = selected == ThemeMode.LIGHT,
+            onClick = { onSelect(ThemeMode.LIGHT) }
+        )
+        ThemeOption(
+            label = "深色",
+            description = "始终使用深色主题",
+            selected = selected == ThemeMode.DARK,
+            onClick = { onSelect(ThemeMode.DARK) }
         )
     }
 }

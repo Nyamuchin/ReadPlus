@@ -88,6 +88,13 @@ class VideoRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun rename(videoId: Long, newTitle: String) {
+        val entity = dao.findById(videoId) ?: return
+        val trimmed = newTitle.trim()
+        if (trimmed.isEmpty() || trimmed == entity.title) return
+        dao.update(entity.copy(title = trimmed))
+    }
+
     override suspend fun addToCategory(videoId: Long, categoryId: Long) =
         dao.addToCategory(VideoCategoryCrossRef(videoId, categoryId))
 

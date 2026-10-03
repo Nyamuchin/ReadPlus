@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,14 +50,17 @@ fun VideoGrid(
     videos: List<Video>,
     onClick: (Video) -> Unit,
     onDelete: (Video) -> Unit,
+    onRename: (Video, String) -> Unit,
     categories: List<Category>,
     onAddToCategory: (Video, Category) -> Unit,
-    columns: Int = 2
+    columns: Int = 3
 ) {
     var actionTarget by remember { mutableStateOf<Video?>(null) }
     var showActionMenu by remember { mutableStateOf(false) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var renameText by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
@@ -79,7 +83,7 @@ fun VideoGrid(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
+                        .aspectRatio(0.7f)
                         .clip(RoundedCornerShape(6.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
@@ -87,8 +91,8 @@ fun VideoGrid(
                         AsyncImage(
                             model = ImageRequest.Builder(context)
                                 .data(File(v.coverPath))
-                                // ★ 视频封面 16:9，指定合适尺寸
-                                .size(Size(640, 360))
+                                // ★ 竖屏比例，与漫画网格保持一致
+                                .size(Size(360, 520))
                                 .precision(Precision.INEXACT)
                                 .crossfade(false)
                                 .build(),
@@ -125,6 +129,15 @@ fun VideoGrid(
                     TextButton(
                         onClick = {
                             showActionMenu = false
+                            renameText = target.title
+                            showRenameDialog = true
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("重命名") }
+                    HorizontalDivider()
+                    TextButton(
+                        onClick = {
+                            showActionMenu = false
                             showCategoryPicker = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -142,6 +155,43 @@ fun VideoGrid(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showActionMenu = false }) { Text("取消") }
+            }
+        )
+    }
+
+    // ---- 重命名 ----
+    if (showRenameDialog && actionTarget != null) {
+        val target = actionTarget!!
+        AlertDialog(
+            onDismissRequest = {
+                showRenameDialog = false
+                actionTarget = null
+            },
+            title = { Text("重命名视频") },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it },
+                    singleLine = true,
+                    label = { Text("标题") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = renameText.isNotBlank(),
+                    onClick = {
+                        onRename(target, renameText)
+                        showRenameDialog = false
+                        actionTarget = null
+                    }
+                ) { Text("确定") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showRenameDialog = false
+                    actionTarget = null
+                }) { Text("取消") }
             }
         )
     }
