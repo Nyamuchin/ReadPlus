@@ -103,7 +103,7 @@ ReadPlus 是一款完全本地化的漫画和视频管理工具。它不做任�
 
 > 截图待补充
 
-| 首页 | 漫画阅读 | 视频播放 | 设置 |
+| 首页 | 漫画 | 视频 | 设置 |
 |:----:|:--------:|:--------:|:----:|
 | ![首页](docs/screenshots/home.png) | ![详情](docs/screenshots/details.png) | ![视频](docs/screenshots/video.png) | ![设置](docs/screenshots/settings.png) |
 
